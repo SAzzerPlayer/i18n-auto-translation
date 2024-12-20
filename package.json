@@ -7,7 +7,10 @@
   "homepage": "https://github.com/while1618/i18n-auto-translation",
   "bin": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "src",
+    "tsconfig.build.json",
+    "tsconfig.json"
   ],
   "scripts": {
     "start": "node dist/index.js",
@@ -17,7 +20,8 @@
     "lint": "prettier --check . && eslint .",
     "lint:fix": "prettier --write . && eslint --fix .",
     "format": "prettier --write .",
-    "check-updates": "npx npm-check-updates"
+    "check-updates": "npx npm-check-updates",
+    "postinstall": "tsc -p ./tsconfig.build.json"
   },
   "keywords": [
     "i18n",
