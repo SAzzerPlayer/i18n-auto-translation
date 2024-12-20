@@ -36,23 +36,47 @@ export abstract class Translate {
 
   private translateFiles = async (dirPath: string): Promise<void> => {
     console.log('Finding files for translation...');
-    const filePaths: string[] = globSync(`${dirPath}/**/${argv.from}.json`, {
-      ignore: [`${dirPath}/**/node_modules/**`, `${dirPath}/**/dist/**`],
-    });
+
+    let filePaths: string[];
+    if (argv.outputDirPath) {
+      filePaths = globSync(`${dirPath}/**/*.json`, {
+        ignore: [`${dirPath}/**/node_modules/**`, `${dirPath}/**/dist/**`],
+      });
+    } else {
+      filePaths = globSync(`${dirPath}/**/${argv.from}.json`, {
+        ignore: [`${dirPath}/**/node_modules/**`, `${dirPath}/**/dist/**`],
+      });
+    }
+
     if (filePaths.length === 0) {
       throw new Error(`0 files found for translation in ${dirPath}`);
     }
     console.log(`${filePaths.length} files found.`);
     for (const filePath of filePaths) {
       this.skippedWords = [];
-      await this.translateFile(filePath);
+      await this.translateFile(filePath, argv.outputDirPath);
     }
   };
 
-  private translateFile = async (filePath: string): Promise<void> => {
+  private translateFile = async (filePath: string, outputDirPath?: string): Promise<void> => {
     try {
       this.fileForTranslation = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as JSONObj;
-      this.saveTo = path.join(filePath.substring(0, filePath.lastIndexOf('/')), `${argv.to}.json`);
+
+      if (outputDirPath) {
+        if (!argv.dirPath) {
+          throw new Error("Parameter 'outputDirPath' can't be used without the param `dirPath`!");
+        }
+        const relativeFilePath = filePath.slice(
+          filePath.lastIndexOf(argv.dirPath) + argv.dirPath.length,
+        );
+        this.saveTo = path.join(outputDirPath, relativeFilePath);
+      } else {
+        this.saveTo = path.join(
+          filePath.substring(0, filePath.lastIndexOf('/')),
+          `${argv.to}.json`,
+        );
+      }
+
       if (argv.override || !fs.existsSync(this.saveTo)) {
         await this.translationDoesNotExists();
       } else {
@@ -256,6 +280,10 @@ export abstract class Translate {
 
   private writeToFile = (content: JSONObj, message: string): void => {
     try {
+      const _dir = this.saveTo.slice(0, this.saveTo.lastIndexOf('/'));
+      if (!fs.existsSync(_dir)) {
+        fs.mkdirSync(_dir, { recursive: true });
+      }
       fs.writeFileSync(this.saveTo, JSON.stringify(content, null, argv.spaces));
       console.log(message);
     } catch (e) {

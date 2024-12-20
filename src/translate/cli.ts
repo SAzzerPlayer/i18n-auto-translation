@@ -7,6 +7,7 @@ interface Arguments {
   region: string;
   filePath?: string;
   dirPath?: string;
+  outputDirPath?: string;
   from: string;
   to: string;
   override: boolean;
@@ -59,6 +60,12 @@ export const argv: Arguments = yargs(process.argv.slice(2))
       alias: 'd',
       description:
         'Path to a directory in which you will recursively find all JSON files named [from].json (e.g. en.json)',
+    },
+    outputDirPath: {
+      type: 'string',
+      alias: 'do',
+      description:
+        'Path to a directory, where will be placed translated files from the recursive search. Can be used only with parameter `--dirPath`',
     },
     from: {
       type: 'string',
