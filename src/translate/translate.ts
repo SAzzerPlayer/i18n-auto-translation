@@ -38,10 +38,12 @@ export abstract class Translate {
     console.log('Finding files for translation...');
 
     let filePaths: string[];
+    console.log(argv);
     if (argv.outputDirPath) {
       filePaths = globSync(`${dirPath}/**/*.json`, {
         ignore: [`${dirPath}/**/node_modules/**`, `${dirPath}/**/dist/**`],
       });
+      console.log('HH', `${dirPath}/**/*.json`, filePaths);
     } else {
       filePaths = globSync(`${dirPath}/**/${argv.from}.json`, {
         ignore: [`${dirPath}/**/node_modules/**`, `${dirPath}/**/dist/**`],
